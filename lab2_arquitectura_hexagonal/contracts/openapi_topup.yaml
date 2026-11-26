@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: API de Recargas Idempotentes (Arquitectura Hexagonal)
+  version: 1.0.0
+  description: Pasarela de recargas telco con control de idempotencia y validación E.164.
+paths:
+  /topups:
+    post:
+      summary: Procesa una recarga idempotente
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 8
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, amount, currency]
+              properties:
+                phone:
+                  type: string
+                  example: "+584121234567"
+                amount:
+                  type: number
+                  format: double
+                  example: 10.0
+                currency:
+                  type: string
+                  example: "USD"
+      responses:
+        "200":
+          description: Recarga repetida devuelta desde caché de idempotencia
+        "201":
+          description: Recarga creada y aplicada por primera vez
+        "400":
+          description: Datos inválidos (teléfono fuera de E.164 o monto inválido)
+        "422":
+          description: Clave de idempotencia ausente o inválida
